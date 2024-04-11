@@ -19,7 +19,7 @@ class DetailsViewModel(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DetailsState())
-    val state = _state.asStateFlow()
+    val state = _state.asStateFlow() // exposujemo read-only flow
     private fun setState(reducer: DetailsState.() -> DetailsState) = _state.update(reducer)
 
     private val _event = MutableSharedFlow<DetailsUiEvent>()
@@ -33,7 +33,6 @@ class DetailsViewModel(
         viewModelScope.launch {
             setState { copy(loading = true) }
             try {
-                // Assuming getBreedDetails() fetches the details of the breed including the image ID
                 val breedDetails = withContext(Dispatchers.IO) {
                     catBreedRepository.getBreedDetails(breedId).asBreedsDetailUiModel()
                 }
@@ -42,7 +41,7 @@ class DetailsViewModel(
                 }
                 setState { copy(breedsDetail = breedDetails, breedImage = breedImage, loading = false) }
             } catch (e: Exception) {
-                setState { copy(loading = false, error = e.localizedMessage ?: "Unknown error") }
+                setState { copy(loading = false, error = DetailsError.FetchError(e) ) }
             }
         }
     }

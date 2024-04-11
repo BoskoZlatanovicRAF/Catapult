@@ -7,8 +7,12 @@ import raf.rs.rma_projekat.catbreed.list.model.CatBreedUiModel
         val filteredCatBreeds: List<CatBreedUiModel> = emptyList(),
         val loading: Boolean = false,
         val searchMode: Boolean = false,
-        val error: String? = null,
-        var searchText : String = ""
+        val error: ListError? = null,
+        val searchText : String = ""
     )
+
+    sealed class ListError{
+        data class FetchError(val cause: Throwable? = null) : ListError()
+    }
 
 

@@ -27,24 +27,46 @@ class CatBreedListViewModel (
 
     private val events = MutableSharedFlow<CatBreedListUiEvent>()
     fun setEvent(event: CatBreedListUiEvent) = viewModelScope.launch {
-        when (event) {
-            is CatBreedListUiEvent.Search -> {
-                val filteredCatBreeds = _state.value.catBreeds.filter { it.name.contains(event.query, ignoreCase = true) }
-                _state.value = _state.value.copy(filteredCatBreeds = filteredCatBreeds, searchMode = true, searchText = event.query)
-            }
-            is CatBreedListUiEvent.SubmitSearch -> {
-                _state.value = _state.value.copy(searchMode = false)
-            }
-            is CatBreedListUiEvent.ClearSearch -> {
-                _state.value = _state.value.copy(filteredCatBreeds = emptyList(), searchMode = false)
-            }
-            // Handle other events...
-            is CatBreedListUiEvent.CatBreedSelected -> TODO()
-        }
+//        when (event) {
+//            is CatBreedListUiEvent.Search -> {
+//                val filteredCatBreeds = _state.value.catBreeds.filter { it.name.contains(event.query, ignoreCase = true) }
+//                _state.value = _state.value.copy(filteredCatBreeds = filteredCatBreeds, searchMode = true, searchText = event.query)
+//            }
+//            is CatBreedListUiEvent.SubmitSearch -> {
+//                _state.value = _state.value.copy(searchMode = false)
+//            }
+//            is CatBreedListUiEvent.ClearSearch -> {
+//                _state.value = _state.value.copy(filteredCatBreeds = emptyList(), searchMode = false, searchText = "")
+//            }
+//            // Handle other events...
+//            is CatBreedListUiEvent.CatBreedSelected -> TODO()
+//        }
         events.emit(event)
     }
     init {
         fetchCatBreeds()
+        observeEvents()
+    }
+
+    private fun observeEvents(){
+        viewModelScope.launch {
+            events.collect{event->
+                when (event) {
+                    is CatBreedListUiEvent.Search -> {
+                        val filteredCatBreeds = _state.value.catBreeds.filter { it.name.contains(event.query, ignoreCase = true) }
+                        _state.value = _state.value.copy(filteredCatBreeds = filteredCatBreeds, searchMode = true, searchText = event.query)
+                    }
+                    is CatBreedListUiEvent.SubmitSearch -> {
+                        _state.value = _state.value.copy(searchMode = false)
+                    }
+                    is CatBreedListUiEvent.ClearSearch -> {
+                        _state.value = _state.value.copy(filteredCatBreeds = emptyList(), searchMode = false, searchText = "")
+                    }
+                    // Handle other events...
+                    is CatBreedListUiEvent.CatBreedSelected -> TODO()
+                }
+            }
+        }
     }
 
     private fun fetchCatBreeds() {
@@ -58,7 +80,7 @@ class CatBreedListViewModel (
                 _state.value = _state.value.copy(catBreeds = catBreeds, loading = false)
             } catch (e: Exception) {
                 Log.e("BreedsListViewModel", "Error fetching breeds", e)
-                _state.value = _state.value.copy(error = e.message, loading = false)
+                _state.value = _state.value.copy(error = ListError.FetchError(e), loading = false)
             }
         }
     }

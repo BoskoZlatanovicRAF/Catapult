@@ -56,6 +56,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
+import raf.rs.rma_projekat.catbreed.list.ListError
 
 fun NavGraphBuilder.breedDetails(
     route: String,
@@ -76,7 +77,7 @@ fun NavGraphBuilder.breedDetails(
         }
     )
 
-    val state = detailsViewModel.state.collectAsState()
+    val state = detailsViewModel.state.collectAsState() // da moze da se pristupi state-u iz view modela
 
     BreedDetails(
         state = state.value,
@@ -85,7 +86,7 @@ fun NavGraphBuilder.breedDetails(
         },
         onClose = onClose,
         modifier = Modifier.fillMaxSize(),
-        viewModel = detailsViewModel
+
     )
 
 }
@@ -95,7 +96,7 @@ fun BreedDetails(
     eventPublisher: (DetailsUiEvent) -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: DetailsViewModel
+
 ) {
     if (state.loading) {
         Box (
@@ -104,8 +105,17 @@ fun BreedDetails(
         ){
             CircularProgressIndicator()
         }
-    } else if (state.error.isNotEmpty()) {
-        Text(text = "Error: ${state.error}")
+    } else if (state.error != null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            val errorMessage = when (state.error) {
+                is DetailsError.FetchError ->
+                    "Failed to load. Error message: ${state.error.cause?.message}."
+            }
+            Text(text = errorMessage)
+        }
     } else {
         state.breedsDetail?.let { breedDetails ->
             Card(

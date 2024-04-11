@@ -1,6 +1,7 @@
 package raf.rs.rma_projekat.catbreed.list
 
 import android.annotation.SuppressLint
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
@@ -30,6 +32,7 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,10 +61,9 @@ fun NavGraphBuilder.catbreeds(
     CatBreedListScreen(
         state = state.value,
         eventPublisher = {
-            catListViewModel.setEvent(it)
+            catListViewModel.setEvent(it) // osluskujemo eventove
         },
         onCatBreedClick = onCatBreedClick
-
     )
 }
 
@@ -73,9 +75,15 @@ fun CatBreedListScreen(
     eventPublisher: (uiEvent: CatBreedListUiEvent) -> Unit,
     onCatBreedClick: (String) -> Unit
 ) {
-//    var searchText by remember { mutableStateOf("") }
+
     var active by remember { mutableStateOf(false) }
-//    val focusManager = LocalFocusManager.current
+//    val listState = rememberLazyListState()
+
+    BackHandler(enabled = state.searchText.isNotEmpty()) {
+        eventPublisher(CatBreedListUiEvent.Search(query = ""))
+//        eventPublisher(CatBreedListUiEvent.SubmitSearch(""))
+        eventPublisher(CatBreedListUiEvent.ClearSearch)
+    }
 
     Scaffold(
         topBar = {
@@ -98,18 +106,18 @@ fun CatBreedListScreen(
                     Icon(Icons.Filled.Search, contentDescription = "Clear")
 
                 },
-                trailingIcon = {
+                trailingIcon = { // ovo je samo za X
                     if(active){
                         Icon(
                             modifier = Modifier.clickable {
                                 if(state.searchText.isNotEmpty()){
-                                    state.searchText = ""
                                     eventPublisher(CatBreedListUiEvent.ClearSearch)
                                 }
                                 else{
                                     active = false
 
                                 }
+
                             },
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close"
@@ -130,10 +138,21 @@ fun CatBreedListScreen(
                 ) {
                     CircularProgressIndicator()
                 }
-            } else {
+            } else if (state.error != null) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    val errorMessage = when (state.error) {
+                        is ListError.FetchError ->
+                            "Failed to load. Error message: ${state.error.cause?.message}."
+                    }
+                    Text(text = errorMessage)
+                }
+            }else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = paddingValues
+                    contentPadding = paddingValues,
                 ) {
                     val catBreedsToDisplay = if (state.searchMode) state.filteredCatBreeds else state.catBreeds
                     items(catBreedsToDisplay, key = { breed -> breed.id }) { catBreed ->
@@ -196,74 +215,3 @@ fun CatBreedItem(catBreed: CatBreedUiModel, onClick: () -> Unit) {
         }
     }
 }
-
-//@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//fun CatBreedListScreen(
-//    state: CatBreedListState,
-//    eventPublisher: (uiEvent: CatBreedListUiEvent) -> Unit,
-//    onCatBreedClick: (String) -> Unit
-//){
-//
-//    var searchText by remember { mutableStateOf("") }
-//
-//    Scaffold(
-//        topBar = {
-//            Column {
-//                TopAppBar(title = { Text(text = "Cat breeds") })
-//                    TextField(
-//                        value = searchText,
-//                        onValueChange = { newValue ->
-//                            searchText = newValue
-//                            eventPublisher(CatBreedListUiEvent.Search(newValue))
-//                        },
-//                        trailingIcon = {
-//                            if (searchText.isNotEmpty()) {
-//                                IconButton(onClick = {
-//                                    searchText = ""
-//                                    eventPublisher(CatBreedListUiEvent.ClearSearch)
-//                                }) {
-//                                    Icon(Icons.Filled.Clear, contentDescription = "Clear")
-//                                }
-//                            } else {
-//                                IconButton(onClick = { /* Handle search icon click */ }) {
-//                                    Icon(Icons.Default.Search, contentDescription = "Search")
-//                                }
-//                            }
-//                        },
-//                        label = { Text("Search") },
-//                        modifier = Modifier.padding(8.dp).fillMaxWidth()
-//                    )
-//            }
-//        },
-//        content = {paddingValues ->
-//            if(state.loading){
-//                Box(
-//                    modifier = Modifier.fillMaxSize(),
-//                    contentAlignment = Alignment.Center
-//                ){
-//                    CircularProgressIndicator()
-//                }
-//            }
-//            else {
-//                LazyColumn (
-//                    modifier = Modifier.fillMaxSize(),
-//                    contentPadding = paddingValues
-//                ){
-//                    val catBreedsToDisplay = if (state.searchMode) state.filteredCatBreeds else state.catBreeds
-//                    items(catBreedsToDisplay, key = { it.id }) { catBreed ->
-//                        CatBreedItem(
-//                            catBreed = catBreed,
-//                            onClick = { onCatBreedClick(catBreed.id) }
-//                        )
-//                    }
-//                }
-//            }
-//        }
-//    )
-//}
-
-
-
-
