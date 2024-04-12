@@ -50,19 +50,18 @@ class CatBreedListViewModel (
 
     private fun observeEvents(){
         viewModelScope.launch {
-            events.collect{event->
+            events.collect{ event->
                 when (event) {
                     is CatBreedListUiEvent.Search -> {
                         val filteredCatBreeds = _state.value.catBreeds.filter { it.name.contains(event.query, ignoreCase = true) }
                         _state.value = _state.value.copy(filteredCatBreeds = filteredCatBreeds, searchMode = true, searchText = event.query)
                     }
                     is CatBreedListUiEvent.SubmitSearch -> {
-                        _state.value = _state.value.copy(searchMode = false)
+                        _state.value = _state.value.copy(searchMode = false) // koja je razlika izmedju ovoga i sa setState
                     }
                     is CatBreedListUiEvent.ClearSearch -> {
                         _state.value = _state.value.copy(filteredCatBreeds = emptyList(), searchMode = false, searchText = "")
                     }
-                    // Handle other events...
                     is CatBreedListUiEvent.CatBreedSelected -> TODO()
                 }
             }

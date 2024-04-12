@@ -10,7 +10,9 @@ import raf.rs.rma_projekat.catbreed.list.catbreeds
 
 @Composable
 fun Navigation() {
+    //instanca navController-a
     val navController = rememberNavController()
+    //definisanje NavHost-a sa startnom destinacijom "catbreeds", unutar koga se definise navGraph
     NavHost(
         navController = navController,
         startDestination = "catbreeds"

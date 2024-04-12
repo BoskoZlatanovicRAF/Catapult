@@ -106,7 +106,7 @@ fun CatBreedListScreen(
                     Icon(Icons.Filled.Search, contentDescription = "Clear")
 
                 },
-                trailingIcon = { // ovo je samo za X
+                trailingIcon = { // ovo je samo za X dugme, jednom se klikne za brisanje texta a drugi put za zatvaranje search bara
                     if(active){
                         Icon(
                             modifier = Modifier.clickable {
