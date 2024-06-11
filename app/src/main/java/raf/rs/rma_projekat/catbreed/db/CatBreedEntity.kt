@@ -1,12 +1,19 @@
-package raf.rs.rma_projekat.catbreed.details.model
+package raf.rs.rma_projekat.catbreed.db
 
-data class DetailsUiModel(
-    val id: String,
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+
+@Entity
+data class CatBreedEntity (
+    @PrimaryKey val id: String,
     val name: String,
     val temperament: String,
     val origin: String,
+    val alt_names: String = "",
     val description: String,
     val life_span: String,
+//    val weight: Weight,
     val rare: Int,
     val adaptability: Int,
     val affection_level: Int,
@@ -21,5 +28,5 @@ data class DetailsUiModel(
     val stranger_friendly: Int,
     val vocalisation: Int,
     val reference_image_id: String? = null,
-    val wikipedia_url: String? = null
+    val wikipedia_url: String? = null,
 )

@@ -40,7 +40,7 @@ data class CatBreedApiModel(
     val wikipedia_url: String? = null,
     val hypoallergenic: Int,
     val reference_image_id: String? = null,
-    val weight: Weight
+//    val weight: Weight
 //    val image: CatBreedImage? = null
 
 )

@@ -8,5 +8,5 @@ sealed class CatBreedListUiEvent {
     data class CatBreedSelected(val catBreed: String) : CatBreedListUiEvent()
     data class SubmitSearch(val searchText: String) : CatBreedListUiEvent()
     data class Search(val query: String) : CatBreedListUiEvent()
-    object ClearSearch : CatBreedListUiEvent()
+    data object ClearSearch : CatBreedListUiEvent()
 }

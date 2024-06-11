@@ -3,20 +3,21 @@ package raf.rs.rma_projekat.catbreed.list
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import raf.rs.rma_projekat.catbreed.api.model.CatBreedApiModel
 import raf.rs.rma_projekat.catbreed.api.repository.CatBreedRepository
-import raf.rs.rma_projekat.catbreed.list.model.CatBreedUiModel
-import java.io.IOException
-
-class CatBreedListViewModel (
-    private val repository: CatBreedRepository = CatBreedRepository
+import raf.rs.rma_projekat.catbreed.mappers.asCatBreedUiModel
+import javax.inject.Inject
+@HiltViewModel
+class CatBreedListViewModel @Inject constructor(
+    private val repository: CatBreedRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CatBreedListState())
@@ -27,25 +28,31 @@ class CatBreedListViewModel (
 
     private val events = MutableSharedFlow<CatBreedListUiEvent>()
     fun setEvent(event: CatBreedListUiEvent) = viewModelScope.launch {
-//        when (event) {
-//            is CatBreedListUiEvent.Search -> {
-//                val filteredCatBreeds = _state.value.catBreeds.filter { it.name.contains(event.query, ignoreCase = true) }
-//                _state.value = _state.value.copy(filteredCatBreeds = filteredCatBreeds, searchMode = true, searchText = event.query)
-//            }
-//            is CatBreedListUiEvent.SubmitSearch -> {
-//                _state.value = _state.value.copy(searchMode = false)
-//            }
-//            is CatBreedListUiEvent.ClearSearch -> {
-//                _state.value = _state.value.copy(filteredCatBreeds = emptyList(), searchMode = false, searchText = "")
-//            }
-//            // Handle other events...
-//            is CatBreedListUiEvent.CatBreedSelected -> TODO()
-//        }
         events.emit(event)
     }
     init {
         fetchCatBreeds()
+        observeCatBreeds()
         observeEvents()
+
+    }
+
+    private fun observeCatBreeds() {
+        Log.d("CatBreedListViewModel", "pozvana observeCatBreeds()")
+        viewModelScope.launch {
+            setState { copy(loading = true) }
+            repository.observeCatBreeds()
+                .distinctUntilChanged()
+                .collect{
+                    setState{
+                        copy(
+                            loading = false,
+                            catBreeds = it.map { it.asCatBreedUiModel() }
+                        )
+                    }
+                }
+        }
+
     }
 
     private fun observeEvents(){
@@ -53,14 +60,16 @@ class CatBreedListViewModel (
             events.collect{ event->
                 when (event) {
                     is CatBreedListUiEvent.Search -> {
-                        val filteredCatBreeds = _state.value.catBreeds.filter { it.name.contains(event.query, ignoreCase = true) }
-                        _state.value = _state.value.copy(filteredCatBreeds = filteredCatBreeds, searchMode = true, searchText = event.query)
+                        setState {
+                            val filteredCatBreeds = catBreeds.filter { it.name.contains(event.query, ignoreCase = true) }
+                            copy(filteredCatBreeds = filteredCatBreeds, searchMode = true, searchText = event.query)
+                        }
                     }
                     is CatBreedListUiEvent.SubmitSearch -> {
-                        _state.value = _state.value.copy(searchMode = false) // koja je razlika izmedju ovoga i sa setState
+                        setState { copy(searchMode = false) }
                     }
                     is CatBreedListUiEvent.ClearSearch -> {
-                        _state.value = _state.value.copy(filteredCatBreeds = emptyList(), searchMode = false, searchText = "")
+                        setState { copy(filteredCatBreeds = emptyList(), searchMode = false, searchText = "") }
                     }
                     is CatBreedListUiEvent.CatBreedSelected -> TODO()
                 }
@@ -69,26 +78,21 @@ class CatBreedListViewModel (
     }
 
     private fun fetchCatBreeds() {
+        Log.d("CatBreedListViewModel", "pozvana fetchCatBreeds()")
         viewModelScope.launch {
-            _state.value = _state.value.copy(loading = true)
+            setState { copy(loading = true) }
             try {
-                val catBreeds = withContext(Dispatchers.IO) {
-                    repository.getAllCatBreeds().map { it.asCatBreedUiModel() }
+                withContext(Dispatchers.IO) {
+                    // delegira dalje, ili ce fetchovati sa apija, ili ce povuci iz baze ukoliko postoji
+                    repository.fetchAllCatBreeds()
                 }
 
-                _state.value = _state.value.copy(catBreeds = catBreeds, loading = false)
             } catch (e: Exception) {
                 Log.e("BreedsListViewModel", "Error fetching breeds", e)
-                _state.value = _state.value.copy(error = ListError.FetchError(e), loading = false)
+                setState { copy(error = ListError.FetchError(e), loading = false) }
             }
         }
     }
 
-    private fun CatBreedApiModel.asCatBreedUiModel() = CatBreedUiModel(
-        id = this.id,
-        name = this.name,
-        description = this.description,
-        temperament = this.temperament,
-        alt_names = this.alt_names
-    )
+
 }

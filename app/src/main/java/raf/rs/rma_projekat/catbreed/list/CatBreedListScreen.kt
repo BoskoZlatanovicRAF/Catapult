@@ -43,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -54,7 +55,7 @@ fun NavGraphBuilder.catbreeds(
 ) = composable(
     route = route
 ){
-    val catListViewModel = viewModel<CatBreedListViewModel>()
+    val catListViewModel = hiltViewModel<CatBreedListViewModel>()
 
     val state = catListViewModel.state.collectAsState()
 
@@ -102,9 +103,7 @@ fun CatBreedListScreen(
                 },
                 placeholder = { Text("Search") },
                 leadingIcon = {
-
                     Icon(Icons.Filled.Search, contentDescription = "Clear")
-
                 },
                 trailingIcon = { // ovo je samo za X dugme, jednom se klikne za brisanje texta a drugi put za zatvaranje search bara
                     if(active){
@@ -115,9 +114,7 @@ fun CatBreedListScreen(
                                 }
                                 else{
                                     active = false
-
                                 }
-
                             },
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close"
@@ -155,7 +152,9 @@ fun CatBreedListScreen(
                     contentPadding = paddingValues,
                 ) {
                     val catBreedsToDisplay = if (state.searchMode) state.filteredCatBreeds else state.catBreeds
-                    items(catBreedsToDisplay, key = { breed -> breed.id }) { catBreed ->
+                    items(catBreedsToDisplay,
+                        key = { breed -> breed.id }
+                    ) { catBreed ->
                         CatBreedItem(
                             catBreed = catBreed,
                             onClick = { onCatBreedClick(catBreed.id) }

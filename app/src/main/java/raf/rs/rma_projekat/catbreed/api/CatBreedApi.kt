@@ -2,6 +2,8 @@ package raf.rs.rma_projekat.catbreed.api
 
 import raf.rs.rma_projekat.catbreed.api.model.CatBreedApiModel
 import raf.rs.rma_projekat.catbreed.api.model.CatBreedImage
+import raf.rs.rma_projekat.catbreed.db.CatBreedImageEntity
+import raf.rs.rma_projekat.catbreed.gallery.model.CatBreedImageApiModel
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -16,4 +18,10 @@ interface CatBreedApi {
 
     @GET("images/{image_id}")
     suspend fun fetchCatBreedImage(@Path("image_id") imageId: String): CatBreedImage
+
+    @GET("images/search")
+    suspend fun fetchBreedImages(
+        @Query("limit") limit: Int = 10,
+        @Query("breed_ids") breedId: String
+    ): List<CatBreedImageApiModel>
 }

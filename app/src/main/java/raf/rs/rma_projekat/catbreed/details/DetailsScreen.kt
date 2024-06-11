@@ -1,15 +1,12 @@
 package raf.rs.rma_projekat.catbreed.details
 
-import android.app.LauncherActivity
 import android.content.Intent
 import android.net.Uri
-import android.widget.ProgressBar
-import android.widget.RatingBar
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,17 +18,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -42,40 +35,24 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
-import raf.rs.rma_projekat.catbreed.list.ListError
 
 fun NavGraphBuilder.breedDetails(
     route: String,
     arguments: List<NamedNavArgument>,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    onImageClick: (String) -> Unit
 ) = composable(
     route = route,
     arguments = arguments
 ) { navBackStackEntry ->
-    val breedId = navBackStackEntry.arguments?.getString("breedId") ?: throw IllegalArgumentException("Missing cat breed id")
 
-    val detailsViewModel = viewModel<DetailsViewModel>(
-        factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return DetailsViewModel(breedId = breedId) as T
-            }
-        }
-    )
+    val detailsViewModel = hiltViewModel<DetailsViewModel>(navBackStackEntry)
 
     val state = detailsViewModel.state.collectAsState() // da moze da se pristupi state-u iz view modela
 
@@ -85,6 +62,7 @@ fun NavGraphBuilder.breedDetails(
             detailsViewModel.setEvent(it)
         },
         onClose = onClose,
+        onImageClick = onImageClick,
         modifier = Modifier.fillMaxSize(),
 
     )
@@ -95,9 +73,10 @@ fun BreedDetails(
     state: DetailsState,
     eventPublisher: (DetailsUiEvent) -> Unit,
     onClose: () -> Unit,
+    onImageClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 
-) {
+    ) {
     if (state.loading) {
         Box (
             modifier = Modifier.fillMaxSize(),
@@ -138,9 +117,11 @@ fun BreedDetails(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(200.dp)
-                                .clip(RoundedCornerShape(16.dp)) // Rounded corners
-                                .border(2.dp, MaterialTheme.colorScheme.onBackground) // Border
-                                .shadow(5.dp), // Shadow
+                                .clip(RoundedCornerShape(16.dp))
+                                .border(2.dp, MaterialTheme.colorScheme.onBackground)
+                                .shadow(5.dp)
+                                .clickable { onImageClick(state.breedsDetail.id) },
+
                             contentScale = ContentScale.Crop
                         )
                     }
@@ -155,7 +136,7 @@ fun BreedDetails(
 
                     Text(text = "Life Span: ${breedDetails.life_span}", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(bottom = 4.dp))
 
-                    Text(text = "Weight: ${breedDetails.weight.metric}", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(bottom = 4.dp))
+//                    Text(text = "Weight: ${breedDetails.weight.metric}", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(bottom = 4.dp))
 
                     Text(text = "Temperament: ${breedDetails.temperament}", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(bottom = 4.dp))
 
@@ -201,7 +182,7 @@ fun BreedTrait(name: String, level: Int, maxLevel: Int = 5) {
             modifier = Modifier.padding(bottom = 4.dp)
         )
         LinearProgressIndicator(
-            progress = level / maxLevel.toFloat(),
+            progress = { level / maxLevel.toFloat() },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 4.dp),
@@ -210,7 +191,7 @@ fun BreedTrait(name: String, level: Int, maxLevel: Int = 5) {
                 in 2..3 -> Color.Yellow
                 in 4..4 -> Color.Magenta
                 else -> Color.Blue
-            }
+            },
         )
     }
 }
