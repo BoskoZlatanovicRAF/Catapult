@@ -30,4 +30,10 @@ interface CatBreedDao {
     @Query("SELECT * FROM CatBreedImageEntity WHERE breedId = :breedId")
     fun observeImagesForBreed(breedId: String): Flow<List<CatBreedImageEntity>>
 
+    @Query("SELECT * FROM CatBreedImageEntity WHERE id = :imageId")
+    suspend fun getImage(imageId: String): CatBreedImageEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertImage(image: CatBreedImageEntity)
+
 }

@@ -16,7 +16,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -96,7 +96,10 @@ fun PhotoGallery(
                     )
                 }
                 IconButton(onClick = { showPager = false }) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back to gallery")
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back to gallery"
+                    )
                 }
             }
         } else {
@@ -106,7 +109,7 @@ fun PhotoGallery(
             ) {
                 item {
                     IconButton(onClick = onClose) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
 

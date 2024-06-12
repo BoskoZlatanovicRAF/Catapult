@@ -1,6 +1,5 @@
 package raf.rs.rma_projekat.catbreed.gallery
 
-import raf.rs.rma_projekat.catbreed.api.model.CatBreedImage
 import raf.rs.rma_projekat.catbreed.db.CatBreedImageEntity
 
 data class PhotoGalleryState (

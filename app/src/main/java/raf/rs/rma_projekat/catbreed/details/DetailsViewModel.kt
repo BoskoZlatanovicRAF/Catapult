@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import raf.rs.rma_projekat.catbreed.api.repository.CatBreedRepository
 import raf.rs.rma_projekat.catbreed.mappers.asBreedsDetailUiModel
+import raf.rs.rma_projekat.catbreed.mappers.asCatBreedImage
 import javax.inject.Inject
 
 @HiltViewModel
@@ -44,7 +45,7 @@ class DetailsViewModel @Inject constructor(
                 val breedImage = breedDetails.reference_image_id?.let { imageId ->
                     catBreedRepository.getBreedImage(imageId)
                 }
-                setState { copy(breedsDetail = breedDetails, breedImage = breedImage, loading = false) }
+                setState { copy(breedsDetail = breedDetails, breedImage = breedImage?.asCatBreedImage(), loading = false) }
             } catch (e: Exception) {
                 setState { copy(loading = false, error = DetailsError.FetchError(e)) }
             }

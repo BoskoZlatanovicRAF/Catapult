@@ -17,7 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -36,11 +36,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import coil.compose.rememberAsyncImagePainter
+import raf.rs.rma_projekat.core.theme.poppinsBold
+import raf.rs.rma_projekat.core.theme.poppinsMedium
+import raf.rs.rma_projekat.core.theme.poppinsRegular
 
 fun NavGraphBuilder.breedDetails(
     route: String,
@@ -107,7 +111,7 @@ fun BreedDetails(
                     modifier = Modifier.padding(8.dp)
                 ){
                     IconButton(onClick = onClose) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
 
                     state.breedImage?.url?.let { imageUrl ->
@@ -128,19 +132,19 @@ fun BreedDetails(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Text(text = breedDetails.name, style = MaterialTheme.typography.headlineLarge, modifier = Modifier.padding(bottom = 8.dp))
+                    Text(text = breedDetails.name, style = poppinsBold, fontSize = 40.sp, modifier = Modifier.padding(start = 8.dp, bottom = 8.dp))
 
-                    Text(text = breedDetails.description, style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(bottom = 4.dp))
+                    Text(text = breedDetails.description, style = poppinsMedium, modifier = Modifier.padding(start = 8.dp, bottom = 8.dp))
 
-                    Text(text = "Origin: ${breedDetails.origin}", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(bottom = 4.dp))
+                    Text(text = "Origin: ${breedDetails.origin}", style = poppinsMedium, modifier = Modifier.padding(start = 8.dp, bottom = 4.dp))
 
-                    Text(text = "Life Span: ${breedDetails.life_span}", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(bottom = 4.dp))
+                    Text(text = "Life Span: ${breedDetails.life_span}", style = poppinsMedium, modifier = Modifier.padding(start = 8.dp, bottom = 4.dp))
 
 //                    Text(text = "Weight: ${breedDetails.weight.metric}", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(bottom = 4.dp))
 
-                    Text(text = "Temperament: ${breedDetails.temperament}", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(bottom = 4.dp))
+                    Text(text = "Temperament: ${breedDetails.temperament}", style = poppinsMedium, modifier = Modifier.padding(start = 8.dp, bottom = 8.dp))
 
-                    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                    Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)) {
                         BreedTrait("Adaptability", breedDetails.adaptability)
                         BreedTrait("Affection Level", breedDetails.affection_level)
                         BreedTrait("Child Friendly", breedDetails.child_friendly)
@@ -178,7 +182,7 @@ fun BreedTrait(name: String, level: Int, maxLevel: Int = 5) {
     ) {
         Text(
             text = "$name:",
-            style = MaterialTheme.typography.labelLarge,
+            style = poppinsRegular,
             modifier = Modifier.padding(bottom = 4.dp)
         )
         LinearProgressIndicator(

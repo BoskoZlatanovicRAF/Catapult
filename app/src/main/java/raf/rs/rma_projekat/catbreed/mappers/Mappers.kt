@@ -75,6 +75,8 @@ fun CatBreedEntity.asBreedsDetailUiModel() : DetailsUiModel {
 
 }
 
+
+
 fun CatBreedImageApiModel.asCatBreedImageEntity(breedId: String) : CatBreedImageEntity {
     return CatBreedImageEntity(
         id = this.id,
@@ -86,6 +88,14 @@ fun CatBreedImageApiModel.asCatBreedImageEntity(breedId: String) : CatBreedImage
 fun CatBreedImageEntity.asCatBreedImage() : CatBreedImage {
     return CatBreedImage(
         id = this.id,
+        url = this.url
+    )
+}
+
+fun CatBreedImage.asCatBreedImageEntity() : CatBreedImageEntity {
+    return CatBreedImageEntity(
+        id = this.id,
+        breedId = "",
         url = this.url
     )
 }

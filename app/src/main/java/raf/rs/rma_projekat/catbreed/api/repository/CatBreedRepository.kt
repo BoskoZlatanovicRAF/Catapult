@@ -36,8 +36,22 @@ suspend fun fetchAllCatBreeds() {
         return database.catBreedDao().getBreed(id)
     }
 
-    suspend fun getBreedImage(imageId: String): CatBreedImage {
-        return catBreedApi.fetchCatBreedImage(imageId)
+//    suspend fun getBreedImage(imageId: String): CatBreedImage {
+//        return catBreedApi.fetchCatBreedImage(imageId)
+//    }
+    suspend fun getBreedImage(imageId: String): CatBreedImageEntity {
+
+        val imageFromDb = database.catBreedDao().getImage(imageId)
+
+        if(imageFromDb == null) {
+            val imageFromApi = catBreedApi.fetchCatBreedImage(imageId)
+            database.catBreedDao().upsertImage(imageFromApi.asCatBreedImageEntity())
+
+            return imageFromApi.asCatBreedImageEntity()
+        }
+
+        return imageFromDb
+
     }
     fun observeCatBreeds() = database.catBreedDao().observeCatBreeds()
 
