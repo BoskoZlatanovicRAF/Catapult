@@ -10,7 +10,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
@@ -20,6 +19,7 @@ import raf.rs.rma_projekat.catbreed.gallery.photoGallery
 import raf.rs.rma_projekat.catbreed.list.catbreeds
 import raf.rs.rma_projekat.navigation_bar.BottomNavigationBar
 import raf.rs.rma_projekat.navigation_bar.Screen
+import raf.rs.rma_projekat.quiz.quiz
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -30,7 +30,8 @@ fun Navigation() {
         bottomBar = {
             val currentBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = currentBackStackEntry?.destination?.route
-            BottomNavigationBar(navController, currentRoute)
+            if(currentRoute != Screen.Quiz.route)
+                BottomNavigationBar(navController, currentRoute)
         }
     ) {
         NavHost(navController, startDestination = Screen.CatBreeds.route, Modifier.padding(bottom = 70.dp)) {
@@ -69,13 +70,9 @@ fun Navigation() {
                 navController.navigateUp()
             }
 
-            composable(Screen.Profile.route) {
-                /* Profile screen content */
-            }
+            quiz(route = Screen.Quiz.route)
+//            profileScreen(route = Screen.Profile.route)
 
-            composable(Screen.Quiz.route) {
-                /* Quiz screen content */
-            }
         }
     }
 }

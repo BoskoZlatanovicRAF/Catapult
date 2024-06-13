@@ -28,20 +28,24 @@ fun BottomNavigationBar(navController: NavController, currentRoute: String?) {
     ) {
 
         val screens = listOf(Screen.Profile, Screen.Quiz, Screen.CatBreeds)
+        val catBreedRoutes = listOf("catbreeds", "catbreeds/{breedId}", "gallery/{breedId}")
+
         Log.d("BottomNavigationBar", "currentRoute: $currentRoute")
 
         screens.forEach { screen ->
             NavigationBarItem(
                 icon = {
                     Log.d("BottomNavigationBar", screen.route)
-                    if (currentRoute == screen.route) {
+                    if (currentRoute == screen.route ||
+                        (screen.route == Screen.CatBreeds.route && catBreedRoutes.any { route -> currentRoute?.startsWith(route.split("/")[0]) == true })) {
                         Icon(screen.selectedIcon, contentDescription = null)
                     } else {
                         Icon(screen.icon, contentDescription = null)
                     }
                 },
                 label = { Text(text = screen.route.capitalize(Locale.ROOT), style = poppinsMedium) },
-                selected = currentRoute == screen.route,
+                selected = currentRoute == screen.route ||
+                        (screen.route == Screen.CatBreeds.route && catBreedRoutes.any { route -> currentRoute?.startsWith(route.split("/")[0]) == true }),
                 onClick = {
                     navController.navigate(screen.route) {
                         popUpTo = navController.graph.startDestinationId
@@ -55,8 +59,8 @@ fun BottomNavigationBar(navController: NavController, currentRoute: String?) {
                     unselectedTextColor = Color.LightGray,
                     indicatorColor = Color.LightGray
                 )
-
             )
         }
     }
 }
+

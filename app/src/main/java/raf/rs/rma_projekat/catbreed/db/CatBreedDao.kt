@@ -36,4 +36,12 @@ interface CatBreedDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertImage(image: CatBreedImageEntity)
 
+    @Query("SELECT id FROM CatBreedEntity")
+    fun getAllBreedIds(): List<String>
+
+    @Query("SELECT DISTINCT breedId FROM CatBreedImageEntity")
+    fun getAllExistingIds(): List<String>
+
+
+
 }

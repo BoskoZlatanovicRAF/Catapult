@@ -38,7 +38,7 @@ class CatBreedListViewModel @Inject constructor(
     }
 
     private fun observeCatBreeds() {
-        Log.d("CatBreedListViewModel", "pozvana observeCatBreeds()")
+//        Log.d("CatBreedListViewModel", "pozvana observeCatBreeds()")
         viewModelScope.launch {
             setState { copy(loading = true) }
             repository.observeCatBreeds()
@@ -78,7 +78,7 @@ class CatBreedListViewModel @Inject constructor(
     }
 
     private fun fetchCatBreeds() {
-        Log.d("CatBreedListViewModel", "pozvana fetchCatBreeds()")
+//        Log.d("CatBreedListViewModel", "pozvana fetchCatBreeds()")
         viewModelScope.launch {
             setState { copy(loading = true) }
             try {

@@ -91,8 +91,7 @@ fun NavGraphBuilder.catbreeds(
         onCatBreedClick = onCatBreedClick
     )
 }
-val poppinsFontFamily = FontFamily(Font(R.font.font_family))
-val customTextStyle = TextStyle(fontFamily = poppinsFontFamily)
+
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
