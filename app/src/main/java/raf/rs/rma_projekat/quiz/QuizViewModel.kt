@@ -34,7 +34,6 @@ class QuizViewModel @Inject constructor(
 
 
     fun setEvent(event: QuizUiEvent) = viewModelScope.launch {
-//        Log.d("QuizViewModel", "Event received: $event")
         _event.emit(event)
     }
 
@@ -51,20 +50,6 @@ class QuizViewModel @Inject constructor(
         }
     }
 
-    private fun updateMissingImages() {
-        viewModelScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    Log.d("QuizViewModel", "updateMissingImages()")
-                    repository.updateMissingImages()
-                }
-                onEvent(QuizUiEvent.FetchQuestions)
-            } catch (e: Exception) {
-                setState { copy(isLoading = false, errorMessage = e.message) }
-            }
-        }
-    }
-
     private fun onEvent(event: QuizUiEvent) {
         when (event) {
             is QuizUiEvent.FetchQuestions -> fetchQuestions()
@@ -77,125 +62,62 @@ class QuizViewModel @Inject constructor(
         }
     }
 
-    private fun exitQuiz() {
-        timerJob?.cancel()
-        resetEverything()
-//        setState { copy(isQuizStarted == false) }
-    }
-
-    private fun resetEverything() {
-        setState { copy(isQuizExited = true, isQuizStarted = false, isQuizCompleted = false, currentQuestionIndex = 0, score = 0, remainingTime = 300, questions = emptyList()) }
-//        setState { copy(isQuizExited = false)}
-    }
-
-    private fun fetchQuestions() {
+    private fun updateMissingImages() {
         viewModelScope.launch {
             try {
-                setState { copy(isLoading = true) }
-                // Fetch and generate questions here
-
-                    val questions = generateQuestions()
-                    setState { copy(isLoading = false, questions = questions) }
-
+                withContext(Dispatchers.IO) {
+                    repository.updateMissingImages()
+                }
+                setEvent(QuizUiEvent.FetchQuestions)
             } catch (e: Exception) {
                 setState { copy(isLoading = false, errorMessage = e.message) }
             }
         }
     }
 
-    private suspend fun generateQuestions(): List<Question> {
-        val questions = mutableListOf<Question>()
-        withContext(Dispatchers.IO) {
-
-            Log.d("QuizViewModel", "Generating questions")
-
-            val breeds = repository.getAllCatBreeds().filter { it.id != "mala" } // Fetch all breeds
-
-            val allTemperaments = breeds.flatMap { it.temperament.split(",") }
-                .map {
-                    it.trim().lowercase()
-                        .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
-                }
-                .toSet()
-            val selectedBreeds = breeds.shuffled().distinct().take(20)
-            val addedImages = mutableListOf<String>()
-            selectedBreeds.forEachIndexed { index, breed ->
-                val breedImages =
-                    repository.getBreedImages(breed.id).filter { it.breedId == breed.id }.shuffled()
-                var selectedImage = breedImages.random()
-
-                while (selectedImage.url in addedImages) {
-                    selectedImage = breedImages.random()
-                }
-
-                // Question 1: What breed is the cat?
-                if (index < 6) {
-                    val incorrectBreeds =
-                        breeds.filter { it.id != breed.id }.shuffled().take(3).map { it.name }
-                    val answers = (incorrectBreeds + breed.name).shuffled()
-                    questions.add(
-                        Question(
-                            imageUrl = selectedImage.url,
-                            questionText = "What breed is the cat?",
-                            answers = answers,
-                            correctAnswer = breed.name
-                        )
-                    )
-                }
-
-                // Question 2: Find the odd temperament out
-                if (index < 13) {
-                    val breedTemperaments = breed.temperament.split(",").map { it.trim() }.toSet()
-                    val incorrectTemperament =
-                        allTemperaments.filterNot { it in breedTemperaments }.random()
-                    val answers =
-                        (breedTemperaments.shuffled().take(3) + incorrectTemperament).shuffled()
-                    questions.add(
-                        Question(
-                            imageUrl = selectedImage.url,
-                            questionText = "Find the odd temperament out!",
-                            answers = answers,
-                            correctAnswer = incorrectTemperament
-                        )
-                    )
-                }
-
-                // Question 3: Which temperament belongs to the given cat?
-                if (index < 20) {
-                    val correctTemperament = breed.temperament.split(",").random().trim()
-                    val incorrectTemperaments =
-                        allTemperaments.filterNot { it == correctTemperament }.shuffled().take(3)
-                    val answers = (incorrectTemperaments + correctTemperament).shuffled()
-                    questions.add(
-                        Question(
-                            imageUrl = selectedImage.url,
-                            questionText = "Which temperament belongs to the given cat?",
-                            answers = answers,
-                            correctAnswer = correctTemperament
-                        )
-                    )
-                }
+    private fun fetchQuestions() {
+        viewModelScope.launch {
+            try {
+                setState { copy(isLoading = true) }
+                val questions = withContext(Dispatchers.IO) { generateQuestions() }
+                setState { copy(isLoading = false, questions = questions) }
+            } catch (e: Exception) {
+                setState { copy(isLoading = false, errorMessage = e.message) }
             }
-
-
         }
-        val distinctQuestions = questions.distinctBy { it.imageUrl }
-        return distinctQuestions.shuffled().take(20)
-
     }
 
     private fun startQuiz() {
-        Log.d("QuizViewModel", "Starting quiz")
-//        resetEverything()
+        if (state.value.questions.isEmpty()) setEvent(QuizUiEvent.FetchQuestions)
+        resetQuizState()
+        startTimer()
+    }
 
-        if(state.value.questions.isEmpty())
-            setEvent(QuizUiEvent.FetchQuestions)
-        setState { copy(isQuizStarted = true, currentQuestionIndex = 0, score = 0, isQuizCompleted = false, ) }
-        if(state.value.isQuizCompleted || state.value.isQuizExited){
+    private fun resetQuizState() {
+        setState { copy(isQuizStarted = true, currentQuestionIndex = 0, score = 0, isQuizCompleted = false) }
+        if (state.value.isQuizCompleted || state.value.isQuizExited) {
             setState { copy(isQuizCompleted = false, isQuizExited = false) }
         }
+    }
 
-        startTimer()
+    private fun startTimer() {
+        timerJob?.cancel()
+        timerJob = viewModelScope.launch {
+            while (true) {
+                delay(1000L)
+                if (state.value.isQuizCompleted || state.value.isQuizExited) break
+                setEvent(QuizUiEvent.TickTimer)
+            }
+        }
+    }
+
+    private fun tickTimer() {
+        val remainingTime = state.value.remainingTime - 1
+        if (remainingTime <= 0) {
+            setEvent(QuizUiEvent.FinishQuiz)
+        } else {
+            setState { copy(remainingTime = remainingTime) }
+        }
     }
 
     private fun answerQuestion(answer: String) {
@@ -209,42 +131,100 @@ class QuizViewModel @Inject constructor(
         if (nextIndex < state.value.questions.size) {
             setState { copy(currentQuestionIndex = nextIndex) }
         } else {
-            setState { copy(isQuizCompleted = true) }
+            finishQuiz()
         }
     }
 
     private fun finishQuiz() {
+        timerJob?.cancel()
         setState { copy(isQuizCompleted = true) }
     }
 
-    private fun tickTimer() {
+    private fun exitQuiz() {
+        timerJob?.cancel()
+        resetEverything()
+    }
 
-        val remainingTime = state.value.remainingTime - 1
-
-        if (remainingTime <= 0) {
-            setEvent(QuizUiEvent.FinishQuiz)
-        } else {
-            setState { copy(remainingTime = remainingTime) }
+    private fun resetEverything() {
+        setState {
+            copy(
+                isQuizExited = true,
+                isQuizStarted = false,
+                isQuizCompleted = false,
+                currentQuestionIndex = 0,
+                score = 0,
+                remainingTime = 300,
+                questions = emptyList()
+            )
         }
     }
 
-    private fun startTimer() {
-        timerJob?.cancel()
-        timerJob = viewModelScope.launch {
-            while (true) {
-                delay(1000L)
-                if(state.value.isQuizCompleted || state.value.isQuizExited) break
-                setEvent(QuizUiEvent.TickTimer)
+
+
+    private fun generateQuestions(): List<Question> {
+        val questions = mutableListOf<Question>()
+        val breeds = repository.getAllCatBreeds().filter { it.id != "mala" }
+
+        val allTemperaments = breeds.flatMap { it.temperament.split(",") }
+            .map {
+                it.trim().lowercase()
+                    .replaceFirstChar { char -> char.titlecase(Locale.getDefault()) }
+            }
+            .toSet()
+
+        val selectedBreeds = breeds.shuffled().distinct().take(20)
+        val addedImages = mutableListOf<String>()
+
+        selectedBreeds.forEachIndexed { index, breed ->
+            val breedImages = repository.getBreedImages(breed.id).filter { it.breedId == breed.id }.shuffled()
+            var selectedImage = breedImages.random()
+
+            while (selectedImage.url in addedImages) {
+                selectedImage = breedImages.random()
+            }
+
+            when {
+                index < 6 -> {
+                    val incorrectBreeds = breeds.filter { it.id != breed.id }.shuffled().take(3).map { it.name }
+                    val answers = (incorrectBreeds + breed.name).shuffled()
+                    questions.add(
+                        Question(
+                            imageUrl = selectedImage.url,
+                            questionText = "What breed is the cat?",
+                            answers = answers,
+                            correctAnswer = breed.name
+                        )
+                    )
+                }
+                index < 13 -> {
+                    val breedTemperaments = breed.temperament.split(",").map { it.trim() }.toSet()
+                    val incorrectTemperament = allTemperaments.filterNot { it in breedTemperaments }.random()
+                    val answers = (breedTemperaments.shuffled().take(3) + incorrectTemperament).shuffled()
+                    questions.add(
+                        Question(
+                            imageUrl = selectedImage.url,
+                            questionText = "Find the odd temperament out!",
+                            answers = answers,
+                            correctAnswer = incorrectTemperament
+                        )
+                    )
+                }
+                index < 20 -> {
+                    val correctTemperament = breed.temperament.split(",").random().trim()
+                    val incorrectTemperaments = allTemperaments.filterNot { it == correctTemperament }.shuffled().take(3)
+                    val answers = (incorrectTemperaments + correctTemperament).shuffled()
+                    questions.add(
+                        Question(
+                            imageUrl = selectedImage.url,
+                            questionText = "Which temperament belongs to the given cat?",
+                            answers = answers,
+                            correctAnswer = correctTemperament
+                        )
+                    )
+                }
             }
         }
-        if (state.value.isQuizCompleted || state.value.isQuizExited) timerJob?.cancel()
-    }
 
-    private fun calculateTotalPoints(): Float {
-        val nca = state.value.score.toFloat()
-        val mdq = 300.00f
-        val rdt = state.value.remainingTime.toFloat()
-        val tnp = nca * 2.5f * (1 + (rdt + 120) / mdq)
-        return tnp.coerceAtMost(100.00f)
+        return questions.distinctBy { it.imageUrl }.shuffled().take(20)
     }
 }

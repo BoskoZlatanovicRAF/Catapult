@@ -11,6 +11,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import raf.rs.rma_projekat.catbreed.api.CatBreedApi
 import raf.rs.rma_projekat.networking.serialization.AppJson
 import retrofit2.Retrofit
+import javax.inject.Qualifier
 import javax.inject.Singleton
 
 @Module
@@ -38,6 +39,7 @@ object NetworkingModule {
 
     @Provides
     @Singleton
+    @CatApiRetrofit
     fun provideRetrofitClient(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
             .baseUrl("https://api.thecatapi.com/v1/")
@@ -46,4 +48,25 @@ object NetworkingModule {
             .build()
     }
 
+
+    @Provides
+    @Singleton
+    @LeaderBoardRetrofit
+    fun provideLeaderBoardRetrofit(okHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl("https://rma.finlab.rs/")
+            .client(okHttpClient)
+            .addConverterFactory(AppJson.asConverterFactory("application/json".toMediaType()))
+            .build()
+    }
+
 }
+
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class CatApiRetrofit
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class LeaderBoardRetrofit

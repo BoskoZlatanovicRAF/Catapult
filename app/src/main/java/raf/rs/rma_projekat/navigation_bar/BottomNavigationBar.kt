@@ -2,21 +2,18 @@ package raf.rs.rma_projekat.navigation_bar
 
 import android.util.Log
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.CatchingPokemon
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import raf.rs.rma_projekat.core.theme.poppinsMedium
+import raf.rs.rma_projekat.screens.Screen
 import java.util.Locale
 
 @Suppress("DEPRECATION")
@@ -27,7 +24,7 @@ fun BottomNavigationBar(navController: NavController, currentRoute: String?) {
         modifier = Modifier.padding(top = 4.dp)
     ) {
 
-        val screens = listOf(Screen.Profile, Screen.Quiz, Screen.CatBreeds)
+        val screens = listOf(Screen.Profile, Screen.LeaderBoard, Screen.Quiz, Screen.CatBreeds)
         val catBreedRoutes = listOf("catbreeds", "catbreeds/{breedId}", "gallery/{breedId}")
 
         Log.d("BottomNavigationBar", "currentRoute: $currentRoute")

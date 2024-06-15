@@ -30,9 +30,11 @@ class CatBreedRepository @Inject constructor(
         return database.catBreedDao().getBreed(id)
     }
 
+
     fun getAllCatBreeds(): List<CatBreedEntity> {
         return database.catBreedDao().getAllCatBreeds()
     }
+
 
     suspend fun getBreedImage(imageId: String): CatBreedImageEntity {
 
@@ -48,7 +50,11 @@ class CatBreedRepository @Inject constructor(
         return imageFromDb
 
     }
+
+
     fun observeCatBreeds() = database.catBreedDao().observeCatBreeds()
+
+
 
     suspend fun fetchBreedImages(breedId: String): List<CatBreedImageEntity> {
         val imagesFromDb = database.catBreedDao().getImagesForBreed(breedId)
@@ -64,10 +70,18 @@ class CatBreedRepository @Inject constructor(
         return imagesFromDb
     }
 
+
+
     fun getBreedImages(breedId: String): List<CatBreedImageEntity> {
         return database.catBreedDao().getImagesForBreed(breedId)
     }
+
+
+
     fun observeBreedImages(breedId: String) = database.catBreedDao().observeImagesForBreed(breedId)
+
+
+
     suspend fun updateMissingImages() {
         Log.d("CatBreedRepository", "updateMissingImages()")
 
