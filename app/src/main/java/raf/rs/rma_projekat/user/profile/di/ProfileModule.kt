@@ -1,4 +1,4 @@
-package raf.rs.rma_projekat.user.di
+package raf.rs.rma_projekat.user.profile.di
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -9,8 +9,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import raf.rs.rma_projekat.user.ProfileData
-import raf.rs.rma_projekat.user.ProfileDataSerializer
+import raf.rs.rma_projekat.user.profile.ProfileData
+import raf.rs.rma_projekat.user.profile.ProfileDataSerializer
 import javax.inject.Singleton
 
 

@@ -50,7 +50,7 @@ import raf.rs.rma_projekat.core.theme.poppinsMedium
 import raf.rs.rma_projekat.core.theme.poppinsRegular
 import raf.rs.rma_projekat.leaderboard.LeaderBoardUiEvent
 import raf.rs.rma_projekat.leaderboard.LeaderBoardViewModel
-import raf.rs.rma_projekat.screens.Screen
+import raf.rs.rma_projekat.navigation_bar.screens.Screen
 import raf.rs.rma_projekat.utility.hideSystemBars
 import raf.rs.rma_projekat.utility.showSystemBars
 

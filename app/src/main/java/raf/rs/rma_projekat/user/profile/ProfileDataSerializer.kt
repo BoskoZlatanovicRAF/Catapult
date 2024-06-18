@@ -1,4 +1,4 @@
-package raf.rs.rma_projekat.user
+package raf.rs.rma_projekat.user.profile
 
 import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.Serializer

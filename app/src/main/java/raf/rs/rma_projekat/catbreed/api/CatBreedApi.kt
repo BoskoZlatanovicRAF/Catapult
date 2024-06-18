@@ -20,7 +20,7 @@ interface CatBreedApi {
 
     @GET("images/search")
     suspend fun fetchBreedImages(
-        @Query("limit") limit: Int = 100,
+        @Query("limit") limit: Int = 20,
         @Query("breed_ids") breedId: String
     ): List<CatBreedImageApiModel>
 

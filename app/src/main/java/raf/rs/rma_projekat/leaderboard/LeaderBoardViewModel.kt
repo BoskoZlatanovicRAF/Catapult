@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import raf.rs.rma_projekat.leaderboard.repository.LeaderBoardRepository
-import raf.rs.rma_projekat.user.ProfileDataStore
+import raf.rs.rma_projekat.user.profile.ProfileDataStore
 import javax.inject.Inject
 
 @HiltViewModel

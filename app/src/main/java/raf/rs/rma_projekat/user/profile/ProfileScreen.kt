@@ -1,4 +1,4 @@
-package raf.rs.rma_projekat.user
+package raf.rs.rma_projekat.user.profile
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,30 +21,43 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import kotlinx.coroutines.runBlocking
 import raf.rs.rma_projekat.core.theme.poppinsMedium
+import raf.rs.rma_projekat.navigation_bar.screens.Screen
 
 fun NavGraphBuilder.profileScreen(
     route: String,
-    profileDataStore: ProfileDataStore
+    navController: NavController
 ) = composable(
     route = route
 ) {
-    val profileData by profileDataStore.dataFlow.collectAsState(initial = ProfileData.EMPTY)
+    val profileViewModel = hiltViewModel<ProfileViewModel>()
+    val profileData by profileViewModel.loginState.collectAsState()
 
     ProfileScreen(
         profileData = profileData,
         onEditNickname = { newNickname ->
             runBlocking {
-                profileDataStore.updateNickname(newNickname)
+                profileViewModel.updateNickname(newNickname)
+            }
+        },
+        onLogout = {
+            runBlocking {
+                profileViewModel.clearProfileData()
+                navController.navigate("login") {
+                    popUpTo(Screen.Profile.route) { inclusive = true }
+                }
             }
         }
     )
 }
+
 @Composable
-fun ProfileScreen(profileData: ProfileData, onEditNickname: (String) -> Unit) {
+fun ProfileScreen(profileData: ProfileData, onEditNickname: (String) -> Unit, onLogout: () -> Unit) {
     var isEditing by remember { mutableStateOf(false) }
     var newNickname by remember { mutableStateOf(profileData.nickname) }
 
@@ -92,5 +105,10 @@ fun ProfileScreen(profileData: ProfileData, onEditNickname: (String) -> Unit) {
                 Text("Edit Nickname")
             }
         }
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = onLogout) {
+            Text("Logout")
+        }
     }
 }
+

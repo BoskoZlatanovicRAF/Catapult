@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import raf.rs.rma_projekat.core.theme.poppinsMedium
-import raf.rs.rma_projekat.screens.Screen
+import raf.rs.rma_projekat.navigation_bar.screens.Screen
 import java.util.Locale
 
 @Suppress("DEPRECATION")

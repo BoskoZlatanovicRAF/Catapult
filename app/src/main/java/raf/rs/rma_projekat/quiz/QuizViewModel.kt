@@ -88,7 +88,8 @@ class QuizViewModel @Inject constructor(
     }
 
     private fun startQuiz() {
-        if (state.value.questions.isEmpty()) setEvent(QuizUiEvent.FetchQuestions)
+        if (state.value.questions.isEmpty())
+            setEvent(QuizUiEvent.FetchQuestions)
         resetQuizState()
         startTimer()
     }

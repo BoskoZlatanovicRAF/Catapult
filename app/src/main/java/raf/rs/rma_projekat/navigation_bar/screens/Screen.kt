@@ -1,4 +1,4 @@
-package raf.rs.rma_projekat.screens
+package raf.rs.rma_projekat.navigation_bar.screens
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Leaderboard
