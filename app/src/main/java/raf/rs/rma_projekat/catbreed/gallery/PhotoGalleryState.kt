@@ -1,6 +1,6 @@
 package raf.rs.rma_projekat.catbreed.gallery
 
-import raf.rs.rma_projekat.catbreed.db.CatBreedImageEntity
+import raf.rs.rma_projekat.catbreed.db.entity.CatBreedImageEntity
 
 data class PhotoGalleryState (
     val images: List<CatBreedImageEntity> = emptyList(),

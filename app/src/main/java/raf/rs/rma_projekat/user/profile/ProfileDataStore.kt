@@ -33,6 +33,20 @@ class ProfileDataStore @Inject constructor(
             it.copy(nickname = nickname)
         }
     }
+
+    suspend fun updateFullName(fullName: String): ProfileData {
+        return dataStore.updateData {
+            it.copy(fullName = fullName)
+        }
+    }
+
+    suspend fun updateEmail(email: String): ProfileData {
+        return dataStore.updateData {
+            it.copy(email = email)
+        }
+    }
+
+
     suspend fun clearProfileData() {
         dataStore.updateData { ProfileData.EMPTY }
     }

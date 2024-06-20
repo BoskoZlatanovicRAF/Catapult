@@ -2,13 +2,13 @@ package raf.rs.rma_projekat.catbreed.mappers
 
 import raf.rs.rma_projekat.catbreed.api.model.CatBreedApiModel
 import raf.rs.rma_projekat.catbreed.api.model.CatBreedImage
-import raf.rs.rma_projekat.catbreed.db.CatBreedEntity
-import raf.rs.rma_projekat.catbreed.db.CatBreedImageEntity
+import raf.rs.rma_projekat.catbreed.db.entity.CatBreedEntity
+import raf.rs.rma_projekat.catbreed.db.entity.CatBreedImageEntity
 import raf.rs.rma_projekat.catbreed.details.model.DetailsUiModel
 import raf.rs.rma_projekat.catbreed.gallery.model.CatBreedImageApiModel
 import raf.rs.rma_projekat.catbreed.list.model.CatBreedUiModel
 
-fun CatBreedApiModel.asCatBreedDbModel(): CatBreedEntity{
+fun CatBreedApiModel.asCatBreedDbModel(): CatBreedEntity {
     return CatBreedEntity(
         id = this.id,
         name = this.name,

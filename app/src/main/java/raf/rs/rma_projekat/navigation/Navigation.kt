@@ -1,6 +1,7 @@
 package raf.rs.rma_projekat.navigation
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -32,10 +33,11 @@ import raf.rs.rma_projekat.quiz.quiz
 import raf.rs.rma_projekat.user.login.login
 import raf.rs.rma_projekat.user.profile.ProfileData
 import raf.rs.rma_projekat.user.profile.ProfileDataStore
+import raf.rs.rma_projekat.user.profile.ProfileViewModel
 import raf.rs.rma_projekat.user.profile.profileScreen
 
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "RestrictedApi")
 @Composable
 fun Navigation() {
     val navController = rememberNavController()
@@ -69,7 +71,14 @@ fun Navigation() {
                     }
                 }
             }
-            login(route = "login", navController = navController)
+            login(
+                route = "login",
+                onLoginClick = {
+                    navController.navigate(Screen.CatBreeds.route) {
+                        popUpTo("login") { inclusive = true }
+                    }
+                }
+            )
 
             catbreeds(
                 route = Screen.CatBreeds.route,
@@ -108,10 +117,10 @@ fun Navigation() {
             quiz(route = Screen.Quiz.route, navController)
             leaderBoard(route = Screen.LeaderBoard.route)
             profileScreen(route = Screen.Profile.route, navController = navController)
-
         }
     }
 }
+
 
 
 inline val SavedStateHandle.breedId: String

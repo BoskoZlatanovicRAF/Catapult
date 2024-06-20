@@ -1,4 +1,4 @@
-package raf.rs.rma_projekat.dao
+package raf.rs.rma_projekat.catbreed.db.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -6,8 +6,8 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
-import raf.rs.rma_projekat.catbreed.db.CatBreedEntity
-import raf.rs.rma_projekat.catbreed.db.CatBreedImageEntity
+import raf.rs.rma_projekat.catbreed.db.entity.CatBreedEntity
+import raf.rs.rma_projekat.catbreed.db.entity.CatBreedImageEntity
 
 @Dao
 interface CatBreedDao {

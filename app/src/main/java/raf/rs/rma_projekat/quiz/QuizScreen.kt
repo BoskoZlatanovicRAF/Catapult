@@ -3,6 +3,12 @@ package raf.rs.rma_projekat.quiz
 import android.annotation.SuppressLint
 import android.app.Activity
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -53,6 +59,7 @@ import raf.rs.rma_projekat.leaderboard.LeaderBoardViewModel
 import raf.rs.rma_projekat.navigation_bar.screens.Screen
 import raf.rs.rma_projekat.utility.hideSystemBars
 import raf.rs.rma_projekat.utility.showSystemBars
+import kotlin.math.round
 
 fun NavGraphBuilder.quiz(
     route: String,
@@ -155,7 +162,11 @@ fun QuizLandingPage(onStartQuiz: () -> Unit , navController: NavController) {
 }
 
 @Composable
-fun QuizResultScreen(totalPoints: Float, eventPublisher: (QuizUiEvent) -> Unit, navController: NavController) {
+fun QuizResultScreen(
+    totalPoints: Float,
+    eventPublisher: (QuizUiEvent) -> Unit,
+    navController: NavController
+) {
     val leaderBoardViewModel = hiltViewModel<LeaderBoardViewModel>()
 
     Box(
@@ -163,14 +174,24 @@ fun QuizResultScreen(totalPoints: Float, eventPublisher: (QuizUiEvent) -> Unit, 
         modifier = Modifier.fillMaxSize()
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("Your score: ${totalPoints.coerceAtMost(100.00f)}", style = poppinsBold)
+            Text("Your score: $totalPoints", style = poppinsBold)
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = { eventPublisher(QuizUiEvent.ExitQuiz) }){
                 Text("Restart Quiz")
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = { leaderBoardViewModel.setEvent(LeaderBoardUiEvent.PostResult(totalPoints)) }) {
+            Button(onClick = {
+                leaderBoardViewModel.setEvent(LeaderBoardUiEvent.PostResult(totalPoints))
+                navController.navigate(Screen.LeaderBoard.route)
+            }) {
                 Text("Share Result")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = {
+                leaderBoardViewModel.saveUnpublishedResult(totalPoints)
+                navController.navigate(Screen.LeaderBoard.route)
+            }) {
+                Text("Save Result Locally")
             }
         }
 
@@ -179,6 +200,7 @@ fun QuizResultScreen(totalPoints: Float, eventPublisher: (QuizUiEvent) -> Unit, 
         }
     }
 }
+
 
 
 @Composable
@@ -226,65 +248,72 @@ fun QuizQuestions(
             isAnswerClickable = true
         }
     }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Timer(remainingTime = state.remainingTime)
-            IconButton(onClick = { showDialog = true }) {
-                Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Exit Quiz")
-            }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(currentQuestion.questionText, style = poppinsMedium)
-        Spacer(modifier = Modifier.height(16.dp))
-        Image(
-            painter = rememberAsyncImagePainter(currentQuestion.imageUrl),
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        currentQuestion.answers.forEach { answer ->
-            val isCorrect = answer == currentQuestion.correctAnswer
-            val backgroundColor = when {
-                !showResult -> ButtonDefaults.buttonColors().containerColor
-                isCorrect -> Color.Green
-                else -> Color.Red
-            }
-            Box(
+    Crossfade(targetState = currentQuestion) { question ->
+        AnimatedVisibility(
+            visible = true,
+            enter = fadeIn() + slideInVertically(),
+            exit = fadeOut() + slideOutVertically()
+        ){
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
+                    .fillMaxSize()
+                    .padding(16.dp)
             ) {
-                Button(
-                    onClick = {
-                        if (!showResult) {
-                            selectedAnswer = answer
-                            showResult = true
-                            eventPublisher(QuizUiEvent.AnswerQuestion(answer))
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
-//                    enabled = isAnswerClickable
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(answer, style = poppinsRegular)
+                    Timer(remainingTime = state.remainingTime)
+                    IconButton(onClick = { showDialog = true }) {
+                        Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Exit Quiz")
+                    }
                 }
-                if (showResult) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(question.questionText, style = poppinsMedium)
+                Spacer(modifier = Modifier.height(16.dp))
+                Image(
+                    painter = rememberAsyncImagePainter(question.imageUrl),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                question.answers.forEach { answer ->
+                    val isCorrect = answer == question.correctAnswer
+                    val backgroundColor = when {
+                        !showResult -> ButtonDefaults.buttonColors().containerColor
+                        isCorrect -> Color.Green
+                        else -> Color.Red
+                    }
                     Box(
                         modifier = Modifier
-                            .matchParentSize()
-                            .background(Color.Transparent)
-                            .clickable(enabled = false) {}
-                    )
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    ) {
+                        Button(
+                            onClick = {
+                                if (!showResult) {
+                                    selectedAnswer = answer
+                                    showResult = true
+                                    eventPublisher(QuizUiEvent.AnswerQuestion(answer))
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
+                            //                    enabled = isAnswerClickable
+                        ) {
+                            Text(answer, style = poppinsRegular)
+                        }
+                        if (showResult) {
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .background(Color.Transparent)
+                                    .clickable(enabled = false) {}
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -312,13 +341,11 @@ fun Timer(remainingTime: Long) {
 }
 
 
-
-
 fun calculateTotalPoints(correctAnswers: Int, remainingTime: Long): Float {
     val nca = correctAnswers.toFloat() // Number of correct answers
     val mdq = 300.00f // Maximum duration of the quiz
     val rdt = remainingTime.toFloat() // Remaining duration of the quiz
     val tnp = nca * 2.5f * (1 + (rdt + 120) / mdq) // Total number of points
-    return tnp.coerceAtMost(100.00f) // Max points is 100
+    return round(tnp.coerceAtMost(100.00f) * 100) / 100
 }
 

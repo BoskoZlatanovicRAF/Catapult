@@ -17,3 +17,4 @@ sealed class Screen(val route: String, val icon: ImageVector, val selectedIcon: 
     object CatBreeds : Screen("catbreeds", Icons.Outlined.Pets ,Icons.Rounded.Pets)
     object LeaderBoard : Screen("leaderboard", Icons.Outlined.Leaderboard, Icons.Rounded.Leaderboard)
 }
+

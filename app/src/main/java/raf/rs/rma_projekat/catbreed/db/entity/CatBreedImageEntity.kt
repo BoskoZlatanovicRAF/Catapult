@@ -1,4 +1,4 @@
-package raf.rs.rma_projekat.catbreed.db
+package raf.rs.rma_projekat.catbreed.db.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

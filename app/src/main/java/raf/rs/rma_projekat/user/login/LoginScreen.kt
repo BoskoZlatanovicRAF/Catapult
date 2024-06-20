@@ -26,36 +26,43 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import raf.rs.rma_projekat.navigation_bar.screens.Screen
 import raf.rs.rma_projekat.user.profile.ProfileData
+import raf.rs.rma_projekat.user.profile.ProfileState
+import raf.rs.rma_projekat.user.profile.ProfileUiEvent
 import raf.rs.rma_projekat.user.profile.ProfileViewModel
 
 
 fun NavGraphBuilder.login(
     route: String,
-    navController: NavController
+    onLoginClick: () -> Unit
 ) = composable(
     route = route
 ) {
     val profileViewModel = hiltViewModel<ProfileViewModel>()
-    val loginState by profileViewModel.loginState.collectAsState()
+    val profileState by profileViewModel.state.collectAsState()
 
     LoginScreen(
-        onLogin = { profileData ->
-            profileViewModel.updateProfileData(profileData)
-            navController.navigate(Screen.CatBreeds.route) {
-                popUpTo(route) { inclusive = true }
-            }
+        profileState = profileState,
+        eventPublisher = { event ->
+            profileViewModel.setEvent(event)
         },
-        loginState = loginState
+        onLoginClick = onLoginClick
     )
 }
 
 @Composable
-fun LoginScreen(onLogin: (ProfileData) -> Unit, loginState: ProfileData) {
-    var nickname by remember { mutableStateOf(loginState.nickname) }
-    var fullName by remember { mutableStateOf(loginState.fullName) }
-    var email by remember { mutableStateOf(loginState.email) }
+fun LoginScreen(
+    profileState: ProfileState,
+    eventPublisher: (ProfileUiEvent) -> Unit,
+    onLoginClick: () -> Unit
+) {
+    var nickname by remember { mutableStateOf(profileState.profileData.nickname) }
+    var fullName by remember { mutableStateOf(profileState.profileData.fullName) }
+    var email by remember { mutableStateOf(profileState.profileData.email) }
 
-    val isFormValid = nickname.matches(Regex("^[a-zA-Z0-9_]+$")) && fullName.isNotBlank() && email.isNotBlank()
+    val isFormValid = nickname.matches(Regex("^[a-zA-Z0-9_]+$")) &&
+                  fullName.isNotBlank() &&
+                  email.isNotBlank() &&
+                  email.matches(Regex("^[a-z]+@[a-z]+\\.com$"))
 
     Column(
         modifier = Modifier
@@ -98,7 +105,10 @@ fun LoginScreen(onLogin: (ProfileData) -> Unit, loginState: ProfileData) {
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(
-            onClick = { if (isFormValid) onLogin(ProfileData(nickname, fullName, email)) },
+            onClick = { if (isFormValid) {
+                eventPublisher(ProfileUiEvent.Login(ProfileData(nickname, fullName, email)))
+                onLoginClick()
+            } },
             enabled = isFormValid,
             modifier = Modifier
                 .fillMaxWidth()
@@ -109,6 +119,3 @@ fun LoginScreen(onLogin: (ProfileData) -> Unit, loginState: ProfileData) {
         }
     }
 }
-
-
-

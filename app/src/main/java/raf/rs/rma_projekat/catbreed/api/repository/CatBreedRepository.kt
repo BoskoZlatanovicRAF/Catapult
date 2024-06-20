@@ -2,11 +2,14 @@ package raf.rs.rma_projekat.catbreed.api.repository
 
 import android.util.Log
 import raf.rs.rma_projekat.catbreed.api.CatBreedApi
-import raf.rs.rma_projekat.catbreed.db.CatBreedEntity
-import raf.rs.rma_projekat.catbreed.db.CatBreedImageEntity
+import raf.rs.rma_projekat.catbreed.db.entity.CatBreedEntity
+import raf.rs.rma_projekat.catbreed.db.entity.CatBreedImageEntity
 import raf.rs.rma_projekat.catbreed.mappers.asCatBreedDbModel
 import raf.rs.rma_projekat.catbreed.mappers.asCatBreedImageEntity
 import raf.rs.rma_projekat.db.AppDatabase
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import javax.inject.Inject
 
 
@@ -82,9 +85,7 @@ class CatBreedRepository @Inject constructor(
 
 
 
-    suspend fun updateMissingImages() {
-        Log.d("CatBreedRepository", "updateMissingImages()")
-
+    suspend fun updateMissingImages() = coroutineScope {
         // Fetch all breed IDs from the CatBreedEntity table
         val breedIds = database.catBreedDao().getAllBreedIds()
 
@@ -94,11 +95,18 @@ class CatBreedRepository @Inject constructor(
         // Determine the breed IDs that do not have images
         val breedIdsWithoutImages = breedIds.filterNot { it in breedIdsWithImages }
 
-        // For each breed ID that does not have images, fetch the images from the API and update the database
-        breedIdsWithoutImages.forEach { breedId ->
-            val imagesFromApi = catBreedApi.fetchBreedImages(breedId = breedId)
-            val newImages = imagesFromApi.map { apiImage -> CatBreedImageEntity(apiImage.id, breedId, apiImage.url) }
-            database.catBreedDao().upsertAllImages(newImages)
+        // Fetch images in batches
+        breedIdsWithoutImages.chunked(10).forEach { batch ->
+            val deferreds = batch.map { breedId ->
+                async {
+                    val imagesFromApi = catBreedApi.fetchBreedImages(breedId = breedId)
+                    imagesFromApi.map { apiImage -> CatBreedImageEntity(apiImage.id, breedId, apiImage.url) }
+                }
+            }
+            val results = deferreds.awaitAll()
+            results.flatten().let { newImages ->
+                database.catBreedDao().upsertAllImages(newImages)
+            }
         }
     }
 
